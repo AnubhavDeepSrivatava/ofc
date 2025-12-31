@@ -1,0 +1,41 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.db import get_db
+from app.core.security import get_token_user_name
+from app.core.responses import JSendRoute
+from app.schemas.user import UserCreate, UserResponse
+from app.services.user import User
+
+router = APIRouter(route_class=JSendRoute)
+user_service = User()
+
+
+@router.post("/", response_model=UserResponse)
+async def create_user_endpoint(
+    user_in: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    actor_name: str = Depends(get_token_user_name)
+) -> UserResponse:
+    """
+    Create a new user.
+    Transaction is handled automatically - commits on success, rolls back on exception.
+    """
+    try:
+        result = await user_service.create(db, user_in, actor_name)
+        await db.commit()
+        return result
+    except Exception:
+        await db.rollback()
+        raise
+
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user_endpoint(
+    user_id: int,
+    db: AsyncSession = Depends(get_db)
+) -> UserResponse:
+    """
+    Get a user by ID.
+    """
+    return await user_service.get(db, user_id)
+
