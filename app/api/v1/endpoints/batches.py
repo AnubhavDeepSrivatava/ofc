@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
 from typing import Any
+from app.core.logging import get_logger
 from app.services.batch_service import BatchService
 
 router = APIRouter()
+
 
 @router.post("/")
 async def create_batch(
@@ -14,4 +16,5 @@ async def create_batch(
     Create new batch.
     """
     service = BatchService()
-    return await service.create_new_batch("user_id", "school_id", batch_in)
+    result = await service.create_new_batch("user_id", "school_id", batch_in)
+    return result

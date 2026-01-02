@@ -3,11 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.core.security import get_token_user_name
 from app.core.responses import JSendRoute
+from app.core.logging import get_logger
 from app.schemas.student import StudentCreate, StudentResponse
 from app.services.student import Student
 
 router = APIRouter(route_class=JSendRoute)
 student_service = Student()
+logger = get_logger(__name__)
 
 
 @router.post("/", response_model=StudentResponse)
@@ -20,9 +22,11 @@ async def create_student_endpoint(
     Create a new student.
     Transaction is handled automatically - commits on success, rolls back on exception.
     """
+    logger.info(f"Creating student - actor: {actor_name}")
     try:
         result = await student_service.create(db, student_in, actor_name)
         await db.commit()
+        logger.info(f"Student created successfully - actor: {actor_name}")
         return result
     except Exception:
         await db.rollback()
@@ -37,5 +41,8 @@ async def get_student_endpoint(
     """
     Get a student by ID.
     """
-    return await student_service.get(db, student_id)
+    logger.info(f"Getting student - student_id: {student_id}")
+    result = await student_service.get(db, student_id)
+    logger.info(f"Student retrieved successfully - student_id: {student_id}")
+    return result
 
