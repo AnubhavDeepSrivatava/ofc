@@ -3,7 +3,7 @@ from app.schemas.student import StudentCreate, StudentResponse
 from app.repositories.student_repository import StudentRepository
 from app.services.user import User as UserService
 from app.services.utils import orm_to_pydantic
-
+from uuid import UUID
 
 class Student:
     """
@@ -24,7 +24,7 @@ class Student:
         self,
         db: AsyncSession,
         student_schema: StudentCreate,
-        actor_name: str             
+        actor_name: UUID             
     ) -> StudentResponse:
         """
         Creates a new student with user validation.
@@ -62,7 +62,7 @@ class Student:
         # Transform: ORM → Pydantic Response
         return orm_to_pydantic(db_student, StudentResponse)
     
-    async def get(self, db: AsyncSession, student_id: int) -> StudentResponse:
+    async def get(self, db: AsyncSession, student_id: UUID) -> StudentResponse:
         """
         Get student by ID.
         

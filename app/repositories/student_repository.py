@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.student import Student as StudentModel
 from app.repositories.base_repository import BaseRepository
-
+from uuid import UUID   
 
 class StudentRepository(BaseRepository[StudentModel]):
     """
@@ -16,7 +16,7 @@ class StudentRepository(BaseRepository[StudentModel]):
     async def get_by_student_id(
         self,
         db: AsyncSession,
-        student_id: int
+        student_id: UUID
     ) -> StudentModel:
         """
         Get student by student_id or raise exception if not found.

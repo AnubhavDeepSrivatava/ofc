@@ -1,10 +1,12 @@
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid7.uuid7 import uuid7
 from app.schemas.user import UserCreate, UserResponse
 from app.repositories.user_repository import UserRepository
+from app.core.password import hash_password
 from app.services.utils import orm_to_pydantic
 
-
-class User:
+class User: 
     """
     User service class with user-specific business logic.
     
@@ -22,15 +24,15 @@ class User:
         self,
         db: AsyncSession,
         user_schema: UserCreate,
-        actor_name: str
+        actor_name: UUID
     ) -> UserResponse:
         """
         Creates a new user with email uniqueness check.
         
-        Args:
+        Args:   
             db: Database session
             user_schema: Pydantic schema with user creation data
-            actor_name: Name of the user performing the action
+            actor_name: UUID of the user performing the action
             
         Returns:
             UserResponse: Pydantic response schema
@@ -41,13 +43,19 @@ class User:
         # Business logic: Check email uniqueness
         await self.repository.check_exists_or_raise(
             db,
-            "user_email",
-            user_schema.user_email
+            "email",
+            user_schema.email
         )
         
         # Transform: Pydantic → Dictionary
-        data = user_schema.model_dump(exclude_none=True)
-        
+        data = user_schema.model_dump(exclude={"password"})
+
+        # Generate UUIDv7 (time-based UUID) at application layer
+        data["id"] = uuid7()
+
+        # Hash password
+        data["password_hash"] = hash_password(user_schema.password)
+
         # Repository: Dictionary → ORM (with flush)
         db_user = await self.repository.create(db, data, actor_name)
         
@@ -57,13 +65,13 @@ class User:
         # Transform: ORM → Pydantic Response
         return orm_to_pydantic(db_user, UserResponse)
     
-    async def get(self, db: AsyncSession, user_id: int) -> UserResponse:
+    async def get(self, db: AsyncSession, user_id: UUID) -> UserResponse:
         """
         Get user by ID.
         
         Args:
             db: Database session
-            user_id: The user ID to retrieve
+            user_id: The user UUID to retrieve
             
         Returns:
             UserResponse: Pydantic response schema
@@ -72,7 +80,7 @@ class User:
             logic_exception: If user not found
         """
         # Repository: Get ORM object
-        db_user = await self.repository.get_by_user_id(db, user_id)
+        db_user = await self.repository.get_by_user_id_or_raise(db, user_id)
         
         # Transform: ORM → Pydantic Response
         return orm_to_pydantic(db_user, UserResponse)

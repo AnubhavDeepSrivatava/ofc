@@ -4,7 +4,7 @@ from sqlalchemy import select
 from app.core.exceptions import logic_exception
 from app.core.error_codes import ErrorCodes
 from app.models.base import Base
-
+from uuid import UUID
 ModelType = TypeVar("ModelType", bound=Base)
 
 
@@ -81,7 +81,7 @@ class BaseRepository(Generic[ModelType]):
         self,
         db: AsyncSession,
         data: dict,
-        actor_name: str
+        actor_name: UUID
     ) -> ModelType:
         """
         Create a new record from a dictionary.
@@ -95,7 +95,7 @@ class BaseRepository(Generic[ModelType]):
         Args:
             db: Database session
             data: Dictionary containing model fields
-            actor_name: Name of the user performing the action
+            actor_name: UUID of the user performing the action
             
         Returns:
             The created ORM model instance (with ID populated after flush)

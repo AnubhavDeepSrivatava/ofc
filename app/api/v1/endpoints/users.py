@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
-from app.core.security import get_token_user_name
+from app.core.security import get_token_user_uuid
 from app.core.responses import JSendRoute
+from uuid import UUID
 from app.schemas.user import UserCreate, UserResponse
 from app.services.user import User
+
 
 router = APIRouter(route_class=JSendRoute)
 user_service = User()
@@ -14,7 +16,7 @@ user_service = User()
 async def create_user_endpoint(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_db),
-    actor_name: str = Depends(get_token_user_name)
+    actor_name : UUID = Depends(get_token_user_uuid)
 ) -> UserResponse:
     """
     Create a new user.
@@ -27,7 +29,7 @@ async def create_user_endpoint(
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user_endpoint(
-    user_id: int,
+    user_id: UUID,
     db: AsyncSession = Depends(get_db)
 ) -> UserResponse:
     """

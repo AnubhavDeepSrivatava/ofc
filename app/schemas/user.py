@@ -1,24 +1,34 @@
+from uuid import UUID
 from pydantic import EmailStr
 from app.schemas.base import BaseSchema
+from enum import Enum
 
+class UserTypeEnum(str, Enum):
+    student = "student"
+    jury = "jury"
+    admin = "admin"
+    staff = "staff"
+    platform_admin = "platform_admin"
 
 class UserCreate(BaseSchema):
-    user_name: str
-    user_email: EmailStr
+    username: str
+    email: EmailStr
     password: str
+    user_type: UserTypeEnum
     is_enabled: bool = True
-    send_welcome_email: bool = False
-    user_image: str | None = None
+    should_send_welcome_email: bool = True
+    image_url: str | None = None
 
 
 class UserResponse(BaseSchema):
-    user_id: int
-    user_name: str
-    user_email: str
+    id: UUID
+    username: str
+    email: str
+    user_type: UserTypeEnum
     is_enabled: bool
-    send_welcome_email: bool
-    user_image: str | None
+    should_send_welcome_email: bool
+    image_url: str | None
     created_at: str
     updated_at: str
-    created_by: str | None
-    updated_by: str | None
+    created_by: UUID | None
+    updated_by: UUID | None

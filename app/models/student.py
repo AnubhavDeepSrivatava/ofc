@@ -1,20 +1,28 @@
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, Enum, Text
-from app.models.base import Base
 import enum
+from sqlalchemy import Column, Boolean, Enum, Text
+from sqlalchemy.dialects.postgresql import UUID
+from app.models.base import Base
+
 
 class GenderEnum(enum.Enum):
-    M = "M"
-    F = "F"
-    OTHER = "OTHER"
+    male = "male"
+    female = "female"
+    other = "other"
+    prefer_not_to_say = "prefer_not_to_say"
+
 
 class Student(Base):
     __tablename__ = "students"
 
-    student_id = Column(Integer, primary_key=True)
+    user_id = Column(UUID(as_uuid=True), primary_key=True)
 
-    gender = Column(Enum( GenderEnum,name="gender_enum"), nullable=False)
-    # school_id = Column(Integer, ForeignKey("schools.school_id"), nullable=False)
-    onboarding_process_done = Column(Boolean, default=False)
-    idea = Column(Text)
-    user_id = Column(Integer, ForeignKey("users.user_id"), unique=True, nullable=False)
+    branch_id = Column(UUID(as_uuid=True), nullable=False)
+    full_name = Column(Text, nullable=False)
 
+    gender = Column(
+        Enum(GenderEnum, name="gender_enum"),
+        nullable=True
+    )
+
+    is_onboarding_completed = Column(Boolean, default=False)
+    idea_description = Column(Text, nullable=True)

@@ -17,6 +17,7 @@ def orm_to_pydantic(
     - Converting datetime objects to ISO format strings
     - Converting enum values to strings
     - Creating Pydantic response schema instance
+    - UUIDs are kept as UUID objects (Pydantic handles serialization)
     
     Args:
         db_obj: The SQLAlchemy ORM model instance
@@ -34,6 +35,7 @@ def orm_to_pydantic(
         # Convert enum to string
         elif hasattr(value, 'value'):
             value = value.value
+        # UUIDs are kept as-is, Pydantic will serialize them properly
         data[field_name] = value
     return response_schema(**data)
 
